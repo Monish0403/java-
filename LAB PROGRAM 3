@@ -1,0 +1,85 @@
+*LAB PROGRAM 3*
+
+
+import java.util.Scanner;
+public class LabProgram3 {
+
+	public static void main(String[] args) 
+	{
+		
+		        Scanner sc = new Scanner(System.in);
+
+		        // Read Person details
+		        System.out.println("Enter Person Full Name:");
+		        String name = sc.nextLine();
+
+		        System.out.println("Enter Person Email:");
+		        String email = sc.nextLine();
+
+		        // Create Person object using constructor
+		        Person s1 = new Person(name, email);
+
+		        // Call the method
+		        s1.stringOperations();
+
+		        sc.close();
+	 }
+}
+
+ class Person {
+
+    String fullName;
+    String email;
+
+    // Constructor
+    Person(String fullName, String email) {
+        this.fullName = fullName;
+        this.email = email;
+    }
+
+    // Method to perform string operations
+    void stringOperations() {
+
+        int space = fullName.indexOf(" ");
+
+        String firstName = fullName.substring(0, space);
+        String lastName = fullName.substring(space + 1);
+
+        System.out.println("\n--- String Operations ---");
+
+        System.out.println("First Name: " + firstName);
+        System.out.println("Last Name: " + lastName);
+
+        System.out.println("Uppercase: " + fullName.toUpperCase());
+        System.out.println("Lowercase: " + fullName.toLowerCase());
+
+        // Email validation
+        if(email.endsWith("@gmail.com") ||
+            email.endsWith("@yahoo.com") ||
+             email.endsWith("@outlook.com")) {
+
+            System.out.println("Valid Email Domain");
+        } else {
+            System.out.println("Invalid Email Domain");
+        }
+
+        // Replace spaces
+        System.out.println("Name with underscores: "
+                + fullName.replace(" ", "_"));
+
+        // Count vowels
+        int count = 0;
+
+        for (int i = 0; i < fullName.length(); i++) {
+
+            char ch = Character.toLowerCase(fullName.charAt(i));
+
+            if (ch == 'a' || ch == 'e' || ch == 'i' ||
+                ch == 'o' || ch == 'u') {
+                count++;
+            }
+        }
+
+        System.out.println("Number of vowels: " + count);
+    }
+}
