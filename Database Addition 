@@ -1,0 +1,112 @@
+-- 7. D-Group Staff (Facilitators)
+CREATE TABLE d_group_staff (
+    staff_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    shift VARCHAR(20) -- 'Morning', 'Evening', 'Night'
+);
+
+INSERT INTO d_group_staff (first_name, last_name, email, shift) VALUES
+('Ravi', 'Kumar', 'maintenance@university.edu', 'Morning'),
+('Manjula', 'N', 'manjula.dgroup@university.edu', 'Evening');
+
+-- 8. Facility Tasks
+CREATE TABLE facility_tasks (
+    task_id INT PRIMARY KEY AUTO_INCREMENT,
+    staff_id INT,
+    location VARCHAR(100) NOT NULL,
+    description TEXT,
+    status VARCHAR(20) DEFAULT 'PENDING', -- 'PENDING', 'COMPLETED'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (staff_id) REFERENCES d_group_staff(staff_id)
+);
+
+INSERT INTO facility_tasks (staff_id, location, description, status) VALUES
+(1, 'CS Department Lab 1', 'Routine cleaning and system hardware checks', 'PENDING'),
+(1, 'Hostel Block B', 'Fix leaking plumbing pipe on 2nd floor', 'PENDING'),
+(1, 'Main Auditorium', 'Setup chairs and mikes for guest lecture', 'COMPLETED');
+
+
+
+To make the frontend application fully functional with a backend database, we need to bridge the UI you just saw with the MySQL database.
+Since the previous database didn't have tables for the D-Group Facilitators (Maintenance Staff), I will first add the necessary database tables. Then, I will provide the core algorithms that make the application work, followed by the real-world Use Cases.
+1. Database Addition (MySQL)
+To support the D-Group Facilitator dashboard, we need to add tables for the staff and their assigned maintenance tasks.
+-- 7. D-Group Staff (Facilitators)
+CREATE TABLE d_group_staff (
+    staff_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    shift VARCHAR(20) -- 'Morning', 'Evening', 'Night'
+);
+
+INSERT INTO d_group_staff (first_name, last_name, email, shift) VALUES
+('Ravi', 'Kumar', 'maintenance@university.edu', 'Morning'),
+('Manjula', 'N', 'manjula.dgroup@university.edu', 'Evening');
+
+-- 8. Facility Tasks
+CREATE TABLE facility_tasks (
+    task_id INT PRIMARY KEY AUTO_INCREMENT,
+    staff_id INT,
+    location VARCHAR(100) NOT NULL,
+    description TEXT,
+    status VARCHAR(20) DEFAULT 'PENDING', -- 'PENDING', 'COMPLETED'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (staff_id) REFERENCES d_group_staff(staff_id)
+);
+
+INSERT INTO facility_tasks (staff_id, location, description, status) VALUES
+(1, 'CS Department Lab 1', 'Routine cleaning and system hardware checks', 'PENDING'),
+(1, 'Hostel Block B', 'Fix leaking plumbing pipe on 2nd floor', 'PENDING'),
+(1, 'Main Auditorium', 'Setup chairs and mikes for guest lecture', 'COMPLETED');
+
+2. System Algorithms
+Here is the step-by-step logic (Algorithms) for the core functionalities of the application.
+Algorithm A: Google OAuth & Role-Based Routing
+Goal: Authenticate the user securely and show them the correct dashboard based on their email.
+ * Start: User clicks "Sign in with Google".
+ * Action: Frontend redirects to Google's OAuth 2.0 server.
+ * Response: Google authenticates the user and returns a secure JWT (JSON Web Token) to the frontend.
+ * Action: Frontend sends this JWT to your Backend API (e.g., Java Spring Boot).
+ * Validation: Backend verifies the token signature with Google.
+ * Database Lookup:
+   * Backend extracts the email from the token.
+   * SELECT role FROM users WHERE email = extracted_email
+   * If email exists in students table -> Role is STUDENT.
+   * Else If email exists in d_group_staff table -> Role is FACILITATOR.
+   * Else -> Return Error ("User not found in system").
+ * Response: Backend generates a session token and sends the Role back to the frontend.
+ * End: Frontend hides the login screen and unhides the specific dashboard (Student or Facilitator) based on the received Role.
+Algorithm B: Update Task Status (D-Group Facilitator)
+Goal: Allow staff to mark a pending maintenance task as completed.
+ * Start: Facilitator clicks the "Mark as Done" button next to a task on their dashboard.
+ * Action: Frontend extracts the task_id from the clicked item.
+ * API Call: Frontend sends a PUT /api/tasks/{task_id} request to the backend with data {"status": "COMPLETED"}.
+ * Database Execution:
+   * Backend runs: UPDATE facility_tasks SET status = 'COMPLETED' WHERE task_id = requested_task_id;
+ * Response: Backend returns a success message (HTTP 200 OK).
+ * UI Update: Frontend changes the UI badge from "Pending" (Yellow) to "Completed" (Green) without refreshing the page.
+ * End.
+3. Application Use Cases
+A "Use Case" defines how different actors (users) interact with the system to achieve a specific goal.
+Actor 1: College Student
+ * Use Case 1: View Academic Profile
+   * Description: Student logs in to see their real-time CGPA, total credits earned, and department details pulled from the students and enrollments tables.
+ * Use Case 2: Check Upcoming Exams & Courses
+   * Description: Student checks the dashboard to see which courses they are enrolled in for the current semester (from the courses table).
+ * Use Case 3: View Hostel Allocation
+   * Description: Student checks which hostel block they are assigned to, the warden's contact info, and pending hostel fees.
+Actor 2: D-Group Facilitator (Maintenance / Cleaning Staff)
+ * Use Case 4: View Daily Work Roster
+   * Description: Staff logs in and views a list of pending tasks assigned specifically to their staff_id for their current shift.
+ * Use Case 5: Update Task Status
+   * Description: Staff completes sweeping a lab or fixing a pipe and clicks "Completed" on their phone to update the system.
+ * Use Case 6: Report Infrastructure Damage
+   * Description: While cleaning, staff notices a broken window. They use the portal to create a new task ticket categorized as "Damage" for the admin to review.
+Actor 3: College Administrator (Implicit Backend User)
+ * Use Case 7: Bulk Assign Tasks
+   * Description: Admin assigns weekly cleaning schedules to various D-group staff members across different department buildings.
+ * Use Case 8: Monitor Campus Operations
+   * Description: Admin views a high-level dashboard showing how many facility tasks are pending vs. completed today to measure staff efficiency.
