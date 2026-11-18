@@ -1,0 +1,33 @@
+NB. Initialize an empty stack (empty boxed list)
+initStack =: 0 $ a:
+
+NB. Check if stack is empty (returns 1 if empty, 0 otherwise)
+isEmpty =: 0 = #
+
+NB. Push an item onto the top of the stack (usage: item push stack)
+push =: [ ,~ boxopen@]
+
+NB. Peek at the top element without removing it
+peek =: >@{.
+
+NB. Pop the top element and return both (popped_item ; remaining_stack)
+pop =: (>{.) ; }.
+
+NB. Display stack elements from top to bottom
+display =: echo
+
+NB. ==========================================
+NB. Example Usage
+NB. ==========================================
+s =: initStack ''
+s =: 10 push s
+s =: 20 push s
+s =: 30 push s
+
+display s                 NB. Output: ┌──┬──┬──┐ │30│20│10│ └──┴──┴──┘
+echo 'Top item: ', ": peek s   NB. Output: Top item: 30
+
+'popped s' =: pop s       NB. Unpacks popped value into 'popped' and updates 's'
+echo 'Popped: ', ": popped     NB. Output: Popped: 30
+display s                 NB. Output: ┌──┬──┐ │20│10│ └──┴──┘
+echo 'Is empty: ', ": isEmpty s NB. Output: Is empty: 0
