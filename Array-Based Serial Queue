@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_SIZE 5
+
+typedef struct {
+    int items[MAX_SIZE];
+    int front;
+    int rear;
+} SerialQueue;
+
+// Initialize the queue
+void initQueue(SerialQueue *q) {
+    q->front = -1;
+    q->rear = -1;
+}
+
+// Check if the queue is full
+bool isFull(SerialQueue *q) {
+    return q->rear == MAX_SIZE - 1;
+}
+
+// Check if the queue is empty
+bool isEmpty(SerialQueue *q) {
+    return q->front == -1 || q->front > q->rear;
+}
+
+// Add an element to the back of the queue
+void enqueue(SerialQueue *q, int value) {
+    if (isFull(q)) {
+        printf("Queue Overflow: Cannot insert %d\n", value);
+        return;
+    }
+    if (q->front == -1) {
+        q->front = 0; // Set front to 0 on first insertion
+    }
+    q->rear++;
+    q->items[q->rear] = value;
+    printf("Enqueued: %d\n", value);
+}
+
+// Remove and return the front element
+int dequeue(SerialQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue Underflow: Queue is empty\n");
+        return -1;
+    }
+    int removed = q->items[q->front];
+    q->front++;
+    
+    // Reset pointers when the last element is removed to reuse space
+    if (q->front > q->rear) {
+        q->front = -1;
+        q->rear = -1;
+    }
+    return removed;
+}
+
+// View the front element without removing it
+int peek(SerialQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        return -1;
+    }
+    return q->items[q->front];
+}
+
+// Display all elements in the queue
+void display(SerialQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        return;
+    }
+    printf("Queue elements: ");
+    for (int i = q->front; i <= q->rear; i++) {
+        printf("%d ", q->items[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    SerialQueue q;
+    initQueue(&q);
+
+    enqueue(&q, 10);
+    enqueue(&q, 20);
+    enqueue(&q, 30);
+    display(&q);
+
+    printf("Dequeued: %d\n", dequeue(&q));
+    printf("Front element is now: %d\n", peek(&q));
+    display(&q);
+
+    return 0;
+}
