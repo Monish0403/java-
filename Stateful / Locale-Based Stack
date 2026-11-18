@@ -1,0 +1,56 @@
+coclass 'Stack'
+
+create =: 3 : 0
+  items =: 0 $ a:
+)
+
+isEmpty =: 3 : 0
+  0 = # items
+)
+
+push =: 3 : 0
+  items =: (boxopen y) , items
+  echo 'Pushed: ', ": y
+)
+
+pop =: 3 : 0
+  if. isEmpty '' do.
+    echo 'Stack Underflow: Stack is empty'
+    _1 return.
+  end.
+  val =. > {. items
+  items =: }. items
+  val
+)
+
+peek =: 3 : 0
+  if. isEmpty '' do.
+    echo 'Stack is empty'
+    _1 return.
+  end.
+  > {. items
+)
+
+display =: 3 : 0
+  if. isEmpty '' do.
+    echo 'Stack is empty'
+  else.
+    echo 'Stack (Top -> Bottom): ', ": > items
+  end.
+)
+
+cocurrent 'base'
+
+NB. ==========================================
+NB. Example Usage
+NB. ==========================================
+myStack =: conew 'Stack'
+
+push__myStack 100
+push__myStack 200
+push__myStack 300
+display__myStack ''          NB. Output: Stack (Top -> Bottom): 300 200 100
+
+echo 'Popped: ', ": pop__myStack ''   NB. Output: Popped: 300
+echo 'Peek: ', ": peek__myStack ''    NB. Output: Peek: 200
+display__myStack ''          NB. Output: Stack (Top -> Bottom): 200 100
