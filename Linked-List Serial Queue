@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Node structure
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
+
+// Queue structure holding front and rear pointers
+typedef struct {
+    Node *front;
+    Node *rear;
+} LinkedQueue;
+
+// Initialize an empty queue
+void initQueue(LinkedQueue *q) {
+    q->front = NULL;
+    q->rear = NULL;
+}
+
+// Check if empty
+bool isEmpty(LinkedQueue *q) {
+    return q->front == NULL;
+}
+
+// Add an element to the rear
+void enqueue(LinkedQueue *q, int value) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("Memory allocation failed\n");
+        return;
+    }
+    newNode->data = value;
+    newNode->next = NULL;
+
+    // If queue is empty, both front and rear point to the new node
+    if (isEmpty(q)) {
+        q->front = newNode;
+        q->rear = newNode;
+    } else {
+        q->rear->next = newNode;
+        q->rear = newNode;
+    }
+    printf("Enqueued: %d\n", value);
+}
+
+// Remove an element from the front
+int dequeue(LinkedQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue Underflow: Queue is empty\n");
+        return -1;
+    }
+    Node *temp = q->front;
+    int removed = temp->data;
+
+    q->front = q->front->next;
+
+    // If the queue becomes empty, reset rear to NULL as well
+    if (q->front == NULL) {
+        q->rear = NULL;
+    }
+
+    free(temp);
+    return removed;
+}
+
+// Display all elements
+void display(LinkedQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        return;
+    }
+    Node *current = q->front;
+    printf("Queue elements: ");
+    while (current != NULL) {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    LinkedQueue q;
+    initQueue(&q);
+
+    enqueue(&q, 100);
+    enqueue(&q, 200);
+    enqueue(&q, 300);
+    display(&q);
+
+    printf("Dequeued: %d\n", dequeue(&q));
+    display(&q);
+
+    return 0;
+}
