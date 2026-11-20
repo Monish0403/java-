@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure of a doubly linked list node
+struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
+};
+
+// Function to create a new node
+struct Node* createNode(int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+    newNode->data = value;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert a node at the beginning
+void insertAtBeginning(struct Node** head, int value) {
+    struct Node* newNode = createNode(value);
+    if (*head != NULL) {
+        newNode->next = *head;
+        (*head)->prev = newNode;
+    }
+    *head = newNode;
+}
+
+// Insert a node at the end
+void insertAtEnd(struct Node** head, int value) {
+    struct Node* newNode = createNode(value);
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+    struct Node* temp = *head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = newNode;
+    newNode->prev = temp;
+}
+
+// Delete the first occurrence of a value
+void deleteNode(struct Node** head, int key) {
+    struct Node* temp = *head;
+
+    // Search for the key
+    while (temp != NULL && temp->data != key) {
+        temp = temp->next;
+    }
+
+    // If key was not found
+    if (temp == NULL) {
+        printf("Value %d not found in the list.\n", key);
+        return;
+    }
+
+    // If the node to be deleted is the head node
+    if (*head == temp) {
+        *head = temp->next;
+    }
+
+    // Update the next node's prev pointer if it exists
+    if (temp->next != NULL) {
+        temp->next->prev = temp->prev;
+    }
+
+    // Update the previous node's next pointer if it exists
+    if (temp->prev != NULL) {
+        temp->prev->next = temp->next;
+    }
+
+    free(temp);
+}
+
+// Display the list from head to tail
+void displayForward(struct Node* head) {
+    struct Node* temp = head;
+    printf("Forward:  ");
+    while (temp != NULL) {
+        printf("%d <-> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Display the list from tail to head
+void displayBackward(struct Node* head) {
+    if (head == NULL) {
+        printf("Backward: NULL\n");
+        return;
+    }
+    struct Node* temp = head;
+    // Move to the last node
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    printf("Backward: ");
+    while (temp != NULL) {
+        printf("%d <-> ", temp->data);
+        temp = temp->prev;
+    }
+    printf("NULL\n");
+}
+
+// Free all allocated memory
+void freeList(struct Node* head) {
+    struct Node* temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    struct Node* head = NULL;
+
+    insertAtEnd(&head, 10);
+    insertAtEnd(&head, 20);
+    insertAtBeginning(&head, 5);
+    insertAtEnd(&head, 30);
+
+    displayForward(head);
+    displayBackward(head);
+
+    deleteNode(&head, 20);
+    printf("\nAfter deleting 20:\n");
+    displayForward(head);
+    displayBackward(head);
+
+    freeList(head);
+    return 0;
+}
