@@ -1,0 +1,40 @@
+#include <stdio.h>
+#define SIZE 5
+
+// Structure to store an element and its priority
+struct Element {
+    int data;
+    int priority;
+};
+
+struct Element pq[SIZE];
+int count = 0;
+
+// Check if the priority queue is full
+int isFull() {
+    return count == SIZE;
+}
+
+// Check if the priority queue is empty
+int isEmpty() {
+    return count == 0;
+}
+
+// Insert an element in sorted order (higher priority value = higher priority)
+void enqueue(int data, int priority) {
+    if (isFull()) {
+        printf("Priority Queue Overflow! Cannot insert %d\n", data);
+        return;
+    }
+
+    int i = count - 1;
+    // Shift elements with lower priority to the right
+    while (i >= 0 && pq[i].priority < priority) {
+        pq[i + 1] = pq[i];
+        i--;
+    }
+
+    pq[i + 1].data = data;
+    pq[i + 1].priority = priority;
+    count++;
+    printf("Inserted: %d (Priority: %d)\n", data
