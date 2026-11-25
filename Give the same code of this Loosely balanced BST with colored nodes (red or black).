@@ -1,0 +1,391 @@
+2#include <stdio.h>
+#include <stdlib.h>
+
+enum Color { RED, BLACK };
+
+struct node
+{
+    int data;
+    enum Color color;
+    struct node *left;
+    struct node *right;
+    struct node *parent;
+};
+
+// Create a new Red node
+struct node* createNode(int value)
+{
+    struct node *newnode = (struct node*)malloc(sizeof(struct node));
+
+    if (newnode == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+
+    newnode->data = value;
+    newnode->color = RED;
+    newnode->left = NULL;
+    newnode->right = NULL;
+    newnode->parent = NULL;
+
+    return newnode;
+}
+
+// Left rotation around node x
+void leftRotate(struct node **root, struct node *x)
+{
+    struct node *y = x->right;
+    x->right = y->left;
+
+    if (y->left != NULL)
+        y->left->parent = x;
+
+    y->parent = x->parent;
+
+    if (x->parent == NULL)
+        *root = y;
+    else if (x == x->parent->left)
+        x->parent->left = y;
+    else
+        x->parent->right = y;
+
+    y->left = x;
+    x->parent = y;
+}
+
+// Right rotation around node y
+void rightRotate(struct node **root, struct node *y)
+{
+    struct node *x = y->left;
+    y->left = x->right;
+
+    if (x->right != NULL)
+        x->right->parent = y;
+
+    x->parent = y->parent;
+
+    if (y->parent == NULL)
+        *root = x;
+    else if (y == y->parent->left)
+        y->parent->left = x;
+    else
+        y->parent->right = x;
+
+    x->right = y;
+    y->parent = x;
+}
+
+// Restore Red-Black properties after insertion
+void fixViolation(struct node **root, struct node *z)
+{
+    while (z != *root && z->parent->color == RED)
+    {
+        struct node *parent = z->parent;
+        struct node *grandparent = parent->parent;
+
+        // Parent is left child of grandparent
+        if (parent == grandparent->left)
+        {
+            struct node *uncle = grandparent->right;
+
+            // Case 1: Uncle is RED -> Recolor
+            if (uncle != NULL && uncle->color == RED)
+            {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                z = grandparent;
+            }
+            else
+            {
+                // Case 2: z is right child -> Left rotate
+                if (z == parent->right)
+                {
+                    leftRotate(root, parent);
+                    z = parent;
+                    parent = z->parent;
+                }
+
+                // Case 3: z is left child -> Right rotate & recolor
+                rightRotate(root, grandparent);
+                parent->color = BLACK;
+                grandparent->color = RED;
+                z = parent;
+            }
+        }
+        // Parent is right child of grandparent
+        else
+        {
+            struct node *uncle = grandparent->left;
+
+            // Case 1: Uncle is RED -> Recolor
+            if (uncle != NULL && uncle->color == RED)
+            {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                z = grandparent;
+            }
+            else
+            {
+                // Case 2: z is left child -> Right rotate
+                if (z == parent->left)
+                {
+                    rightRotate(root, parent);
+                    z = parent;
+                    parent = z->parent;
+                }
+
+                // Case 3: z is right child -> Left rotate & recolor
+                leftRotate(root, grandparent);
+                parent->color = BLACK;
+                grandparent->color = RED;
+                z = parent;
+            }
+        }
+    }
+
+    (*root)->color = BLACK;
+}
+
+// Insert an element into the Red-Black Tree
+void insert(struct node **root, int value)
+{
+    struct node *y = NULL;
+    struct node *x = *root;
+
+    // Standard BST search for insertion point
+    while (x != NULL)
+    {
+        y = x;
+        if (value < x->data)
+            x = x->left;
+        else if (value > x->data)
+            x = x->right;
+        else
+        {
+            printf("Duplicate element %d ignored.\n", value);
+            return;
+        }
+    }
+
+    struct node *z = createNode(value);
+    z->parent = y;
+
+    if (y == NULL)
+        *root = z;
+    else if (value < y->data)
+        y->left = z;
+    else
+        y->right = z;
+
+    fixViolation(root, z);
+}
+
+// Inorder: Left, Root, Right
+void inorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        inorder(root->left);
+        printf("%d(%c) ", root->data, root->color == RED ? 'R' : 'B');
+        inorder(root->right);
+    }
+}
+
+// Preorder: Root, Left, Right
+void preorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        printf("%d(%c) ", root->data, root->color == RED ? 'R' : 'B');
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+// Postorder: Left, Right, Root
+void postorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d(%c) ", root->data, root->color == RED ? 'R' : 'B');
+    }
+}
+
+// Height measured in number of nodes
+int height(struct node *root)
+{
+    int lh, rh;
+
+    if (root == NULL)
+        return 0;
+
+    lh = height(root->left);
+    rh = height(root->right);
+
+    return (lh > rh ? lh : rh) + 1;
+}
+
+// Zigzag traversal using dynamically sized stacks
+void zigzag(struct node *root)
+{
+    int maxNodes;
+    struct node **stack1, **stack2, *temp;
+    int top1 = -1, top2 = -1;
+
+    if (root == NULL)
+        return;
+
+    maxNodes = height(root) > 0 ? (1 << height(root)) : 1;
+    stack1 = (struct node**)malloc(sizeof(struct node*) * maxNodes);
+    stack2 = (struct node**)malloc(sizeof(struct node*) * maxNodes);
+
+    if (stack1 == NULL || stack2 == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        free(stack1);
+        free(stack2);
+        exit(1);
+    }
+
+    stack1[++top1] = root;
+
+    while (top1 != -1 || top2 != -1)
+    {
+        while (top1 != -1)
+        {
+            temp = stack1[top1--];
+            printf("%d(%c) ", temp->data, temp->color == RED ? 'R' : 'B');
+
+            if (temp->left != NULL)
+                stack2[++top2] = temp->left;
+
+            if (temp->right != NULL)
+                stack2[++top2] = temp->right;
+        }
+
+        while (top2 != -1)
+        {
+            temp = stack2[top2--];
+            printf("%d(%c) ", temp->data, temp->color == RED ? 'R' : 'B');
+
+            if (temp->right != NULL)
+                stack1[++top1] = temp->right;
+
+            if (temp->left != NULL)
+                stack1[++top1] = temp->left;
+        }
+    }
+
+    free(stack1);
+    free(stack2);
+}
+
+// Search for a key in Red-Black Tree
+struct node* search(struct node *root, int key)
+{
+    if (root == NULL || root->data == key)
+        return root;
+
+    if (key < root->data)
+        return search(root->left, key);
+    else
+        return search(root->right, key);
+}
+
+// Free all nodes in the tree
+void freeTree(struct node *root)
+{
+    if (root == NULL)
+        return;
+
+    freeTree(root->left);
+    freeTree(root->right);
+    free(root);
+}
+
+int main()
+{
+    struct node *root = NULL;
+    struct node *result;
+    int a[] = {6, 9, 5, 2, 8, 15, 24, 14, 7, 8, 5, 2};
+    int n = 12, i, choice, key;
+
+    // Create the Red-Black Tree
+    for (i = 0; i < n; i++)
+        insert(&root, a[i]);
+
+    printf("\nRed-Black Tree created successfully.\n");
+
+    while (1)
+    {
+        printf("\n----- RED-BLACK TREE OPERATIONS -----");
+        printf("\n1. Inorder Traversal");
+        printf("\n2. Preorder Traversal");
+        printf("\n3. Postorder Traversal");
+        printf("\n4. Zigzag Traversal");
+        printf("\n5. Search an Element");
+        printf("\n6. Height of Red-Black Tree");
+        printf("\n7. Exit");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                printf("\nInorder Traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+
+            case 2:
+                printf("\nPreorder Traversal: ");
+                preorder(root);
+                printf("\n");
+                break;
+
+            case 3:
+                printf("\nPostorder Traversal: ");
+                postorder(root);
+                printf("\n");
+                break;
+
+            case 4:
+                printf("\nZigzag Traversal: ");
+                zigzag(root);
+                printf("\n");
+                break;
+
+            case 5:
+                printf("\nEnter the element to search: ");
+                scanf("%d", &key);
+                result = search(root, key);
+
+                if (result != NULL)
+                    printf("\nElement %d found in Red-Black Tree (Color: %s).\n",
+                           key, result->color == RED ? "RED" : "BLACK");
+                else
+                    printf("\nElement %d not found in Red-Black Tree.\n", key);
+                break;
+
+            case 6:
+                printf("\nHeight of Red-Black Tree = %d\n", height(root));
+                break;
+
+            case 7:
+                printf("\nExiting program...\n");
+                freeTree(root);
+                exit(0);
+
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
