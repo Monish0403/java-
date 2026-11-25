@@ -1,0 +1,267 @@
+Design, develop, and execute a menu-driven program in C for the following operations on a Binary Search Tree (BST) of integers:
+Create a BST of N integers using the following elements (ignore duplicate values):
+6, 9, 5, 2, 8, 15, 24, 14, 7, 8, 5, 2
+Traverse the BST in:
+Inorder
+Preorder
+Postorder
+Zigzag (Spiral) order
+Search the BST for a given element (key) and display an appropriate message indicating whether it is found or not.
+Find and display the Height of the Binary Search Tree (measured in terms of the number of nodes).
+Exit the program after freeing all dynamically allocated memory.
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct node
+{
+    int data;
+    struct node *left;
+    struct node *right;
+};
+
+// Create a new node
+struct node* createNode(int value)
+{
+    struct node *newnode = (struct node*)malloc(sizeof(struct node));
+
+    if (newnode == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+
+    newnode->data = value;
+    newnode->left = NULL;
+    newnode->right = NULL;
+
+    return newnode;
+}
+
+// Insert an element into BST
+struct node* insert(struct node *root, int value)
+{
+    if (root == NULL)
+        return createNode(value);
+
+    if (value < root->data)
+        root->left = insert(root->left, value);
+    else if (value > root->data)
+        root->right = insert(root->right, value);
+    else
+        printf("Duplicate element %d ignored.\n", value);
+
+    return root;
+}
+
+// Inorder: Left, Root, Right
+void inorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+// Preorder: Root, Left, Right
+void preorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        printf("%d ", root->data);
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+// Postorder: Left, Right, Root
+void postorder(struct node *root)
+{
+    if (root != NULL)
+    {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d ", root->data);
+    }
+}
+
+// Height measured in number of nodes
+int height(struct node *root)
+{
+    int lh, rh;
+
+    if (root == NULL)
+        return 0;
+
+    lh = height(root->left);
+    rh = height(root->right);
+
+    if (lh > rh)
+        return lh + 1;
+    else
+        return rh + 1;
+}
+
+// Zigzag traversal using dynamically sized stacks
+void zigzag(struct node *root)
+{
+    int maxNodes;
+    struct node **stack1, **stack2, *temp;
+    int top1 = -1, top2 = -1;
+
+    if (root == NULL)
+        return;
+
+    maxNodes = height(root) > 0 ? (1 << height(root)) : 1;
+    stack1 = (struct node**)malloc(sizeof(struct node*) * maxNodes);
+    stack2 = (struct node**)malloc(sizeof(struct node*) * maxNodes);
+
+    if (stack1 == NULL || stack2 == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        free(stack1);
+        free(stack2);
+        exit(1);
+    }
+
+    stack1[++top1] = root;
+
+    while (top1 != -1 || top2 != -1)
+    {
+        while (top1 != -1)
+        {
+            temp = stack1[top1--];
+            printf("%d ", temp->data);
+
+            if (temp->left != NULL)
+                stack2[++top2] = temp->left;
+
+            if (temp->right != NULL)
+                stack2[++top2] = temp->right;
+        }
+
+        while (top2 != -1)
+        {
+            temp = stack2[top2--];
+            printf("%d ", temp->data);
+
+            if (temp->right != NULL)
+                stack1[++top1] = temp->right;
+
+            if (temp->left != NULL)
+                stack1[++top1] = temp->left;
+        }
+    }
+
+    free(stack1);
+    free(stack2);
+}
+
+// Search for a key in BST
+struct node* search(struct node *root, int key)
+{
+    if (root == NULL || root->data == key)
+        return root;
+
+    if (key < root->data)
+        return search(root->left, key);
+    else
+        return search(root->right, key);
+}
+
+// Free all nodes in the tree
+void freeTree(struct node *root)
+{
+    if (root == NULL)
+        return;
+
+    freeTree(root->left);
+    freeTree(root->right);
+    free(root);
+}
+
+int main()
+{
+    struct node *root = NULL;
+    struct node *result;
+    int a[] = {6, 9, 5, 2, 8, 15, 24, 14, 7, 8, 5, 2};
+    int n = 12, i, choice, key;
+
+    // Create the BST
+    for (i = 0; i < n; i++)
+        root = insert(root, a[i]);
+
+    printf("\nBinary Search Tree created successfully.\n");
+
+    while (1)
+    {
+        printf("\n----- BST OPERATIONS -----");
+        printf("\n1. Inorder Traversal");
+        printf("\n2. Preorder Traversal");
+        printf("\n3. Postorder Traversal");
+        printf("\n4. Zigzag Traversal");
+        printf("\n5. Search an Element");
+        printf("\n6. Height of Binary Tree");
+        printf("\n7. Exit");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                printf("\nInorder Traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+
+            case 2:
+                printf("\nPreorder Traversal: ");
+                preorder(root);
+                printf("\n");
+                break;
+
+            case 3:
+                printf("\nPostorder Traversal: ");
+                postorder(root);
+                printf("\n");
+                break;
+
+            case 4:
+                printf("\nZigzag Traversal: ");
+                zigzag(root);
+                printf("\n");
+                break;
+
+            case 5:
+                printf("\nEnter the element to search: ");
+                scanf("%d", &key);
+                result = search(root, key);
+
+                if (result != NULL)
+                    printf("\nElement %d found in BST.\n", key);
+                else
+                    printf("\nElement %d not found in BST.\n", key);
+                break;
+
+            case 6:
+                printf("\nHeight of Binary Tree = %d\n", height(root));
+                break;
+
+            case 7:
+                printf("\nExiting program...\n");
+                freeTree(root);
+                exit(0);
+
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+  
