@@ -1,0 +1,150 @@
+#include <stdlib.h>
+
+struct Student {
+    char usn[20];
+    char name[30];
+    char dept[20];
+    int sem;
+    char phno[15];
+    struct Student *next;
+};
+
+struct Student *top = NULL;
+
+// PUSH operation
+void push() {
+    struct Student *newnode;
+
+    newnode = (struct Student*)malloc(sizeof(struct Student));
+
+    if (newnode == NULL) {
+        printf("\nMemory allocation failed!\n");
+        return;
+    }
+
+    printf("\nEnter Student USN: ");
+    scanf("%19s", newnode->usn);
+
+    printf("Enter Student Name: ");
+    scanf(" %29[^\n]", newnode->name);
+
+    printf("Enter Department: ");
+    scanf("%19s", newnode->dept);
+
+    printf("Enter Semester: ");
+    scanf("%d", &newnode->sem);
+
+    printf("Enter Phone Number: ");
+    scanf("%14s", newnode->phno);
+
+    newnode->next = top;
+    top = newnode;
+
+    printf("\nStudent pushed onto stack successfully!\n");
+}
+
+// POP operation
+void pop() {
+    struct Student *temp;
+
+    if (top == NULL) {
+        printf("\nStack Underflow! No students to delete.\n");
+        return;
+    }
+
+    temp = top;
+
+    printf("\nDeleted Student Details:\n");
+    printf("USN: %s\n", temp->usn);
+    printf("Name: %s\n", temp->name);
+
+    top = top->next;
+    free(temp);
+
+    printf("Student popped successfully!\n");
+}
+
+// PEEK operation
+void peek() {
+    if (top == NULL) {
+        printf("\nStack is Empty!\n");
+        return;
+    }
+
+    printf("\nTop Student Details:\n");
+    printf("USN        : %s\n", top->usn);
+    printf("Name       : %s\n", top->name);
+    printf("Department : %s\n", top->dept);
+    printf("Semester   : %d\n", top->sem);
+    printf("Phone No   : %s\n", top->phno);
+}
+
+// Display operation
+void display() {
+    struct Student *temp = top;
+
+    if (top == NULL) {
+        printf("\nStack is Empty!\n");
+        return;
+    }
+
+    printf("\nStudent Details (Top to Bottom):\n");
+
+    while (temp != NULL) {
+        printf("\nUSN        : %s", temp->usn);
+        printf("\nName       : %s", temp->name);
+        printf("\nDepartment : %s", temp->dept);
+        printf("\nSemester   : %d", temp->sem);
+        printf("\nPhone No   : %s\n", temp->phno);
+
+        temp = temp->next;
+    }
+}
+
+// Main function
+int main() {
+    int choice;
+
+    while (1) {
+        printf("\n\n----- STUDENT STACK OPERATIONS -----\n");
+        printf("1. PUSH\n");
+        printf("2. POP\n");
+        printf("3. PEEK\n");
+        printf("4. DISPLAY\n");
+        printf("5. EXIT\n");
+
+        printf("\nEnter your choice: ");
+        if (scanf("%d", &choice) != 1) {
+            printf("\nInvalid input!\n");
+            break;
+        }
+
+        switch (choice) {
+            case 1:
+                push();
+                break;
+
+            case 2:
+                pop();
+                break;
+
+            case 3:
+                peek();
+                break;
+
+            case 4:
+                display();
+                break;
+
+            case 5:
+                printf("\nExiting Program...\n");
+                return 0;
+
+            default:
+                printf("\nInvalid Choice! Try Again.\n");
+        }
+    }
+
+    return 0;
+}
+
