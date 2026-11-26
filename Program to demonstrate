@@ -1,0 +1,123 @@
+#include <stdio.h>
+#include <stdlib.h>
+struct node *first = NULL;
+
+struct node {
+    int data;
+    struct node *next;
+};
+
+struct node* getnode() {
+    struct node *newnode;
+    newnode = (struct node*)malloc(sizeof(struct node));
+    if (newnode == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(0);
+    }
+newnode->next = NULL;
+    return newnode;
+}
+
+void insert_front() {
+    struct node *newnode = getnode();
+    printf("Enter data to insert at front: ");
+    scanf("%d", &newnode->data);
+    if (first == NULL) {
+        first = newnode;
+    } else {
+        newnode->next= first;
+        first=newnode;
+    }
+}
+
+void insert_rear() {
+    struct node *newnode = getnode();
+    struct node *temp;
+    printf("Enter data to insert at rear: ");
+    scanf("%d", &newnode->data);
+    newnode->next = NULL;
+
+    if (first == NULL) {
+        first = newnode;
+    } else {
+        temp = first;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newnode;
+    }
+}
+
+void delete_front() {
+    struct node *temp;
+    if (first == NULL) {
+        printf("List is empty, cannot delete.\n");
+        return;
+    }
+    temp = first;
+    first = first->next;
+    printf("Deleted element: %d\n", temp->data);
+    free(temp);
+}
+
+void delete_rear() {
+    struct node *temp, *prev;
+    if (first == NULL) {
+        printf("List is empty, cannot delete.\n");
+        return;
+    }
+    if (first->next == NULL) { // Only one node
+        printf("Deleted element: %d\n", first->data);
+        free(first);
+        first = NULL;
+        return;
+    }
+    temp = first;
+    while (temp->next != NULL) {
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("Deleted element: %d\n", temp->data);
+    prev->next = NULL;
+    free(temp);
+}
+
+void display() {
+    struct node *temp;
+    if (first == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    printf("Linked List elements: ");
+    temp = first;
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+    int choice;
+    while (1) {
+        printf("\n--- Singly Linked List Operations ---\n");
+        printf("1. Insert at Front\n");
+        printf("2. Insert at Rear\n");
+        printf("3. Delete from Front\n");
+        printf("4. Delete from Rear\n");
+        printf("5. Display\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1: insert_front(); break;
+        case 2: insert_rear(); break;
+        case 3: delete_front(); break;
+        case 4: delete_rear(); break;
+        case 5: display(); break;
+        case 6: exit(0);
+        default: printf("Invalid choice! Please try again.\n");
+        }
+    }
+    return 0;
+}
